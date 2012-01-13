@@ -2,7 +2,7 @@
  *
  * Requests the BLDLEVEL information for a given file.
  *
- */ G.!Version = '1.0' /*
+ */ G.!Version = '1.1' /*
  *
  * Author: Dmitriy Kuminov
  *
@@ -35,6 +35,10 @@
  *
  * HISTORY
  *
+ * Version 1.1 (2012-01-13)
+ *   - Add support for Language Code field.
+ *   - Do not show empty fields in "print all" mode.
+ *
  * Version 1.0 (2012-01-13)
  *   - Initial release.
  */
@@ -60,7 +64,7 @@ if (aArgs = '') then do
     say 'Usage: 'filespec('N', ScriptFile)' [-f<format>] <file>'
     say
     say 'The <format> specifier will cause only a value of the specified field'
-    say 'to be printed and is of the following:'
+    say 'to be printed and is of the following (note the case):'
     say
     say '  n - File Name'
     say '  s - Signature'
@@ -69,13 +73,14 @@ if (aArgs = '') then do
     say '  d - Date/Time'
     say '  M - Build Machine'
     say '  A - ASD Feature ID'
+    say '  L - Language Code'
     say '  v - File Version'
     say '  D - Description'
     say
     exit 0
 end
 
-formats.!index = 'nsVrdMAvD'
+formats.!index = 'nsVrdMALvD'
 formats.1.!field = '!filename'
 formats.2.!field = '!signature'
 formats.3.!field = '!vendor'
@@ -83,8 +88,9 @@ formats.4.!field = '!revision'
 formats.5.!field = '!datetime'
 formats.6.!field = '!buildmachine'
 formats.7.!field = '!asdid'
-formats.8.!field = '!version'
-formats.9.!field = '!description'
+formats.8.!field = '!language'
+formats.9.!field = '!version'
+formats.10.!field = '!description'
 
 format = strip(word(aArgs, 1))
 if (left(format, 2) == '-f') then do
@@ -120,13 +126,22 @@ if (format = '') then do
     end
     else do
         say 'Signature:       'G.!bldlevel.!signature
-        say 'Vendor:          'G.!bldlevel.!vendor
-        say 'Revision:        'G.!bldlevel.!revision
-        say 'Date/Time:       'G.!bldlevel.!datetime
-        say 'Build Machine:   'G.!bldlevel.!buildmachine
-        say 'ASD Feature ID:  'G.!bldlevel.!asdid
-        say 'File Version:    'G.!bldlevel.!version
-        say 'Description:     'G.!bldlevel.!description
+        if (G.!bldlevel.!vendor \= '') then
+            say 'Vendor:          'G.!bldlevel.!vendor
+        if (G.!bldlevel.!revision \= '') then
+            say 'Revision:        'G.!bldlevel.!revision
+        if (G.!bldlevel.!datetime \= '') then
+            say 'Date/Time:       'G.!bldlevel.!datetime
+        if (G.!bldlevel.!buildmachine \= '') then
+            say 'Build Machine:   'G.!bldlevel.!buildmachine
+        if (G.!bldlevel.!asdid \= '') then
+            say 'ASD Feature ID:  'G.!bldlevel.!asdid
+        if (G.!bldlevel.!language \= '') then
+            say 'Language Code:   'G.!bldlevel.!language
+        if (G.!bldlevel.!version \= '') then
+            say 'File Version:    'G.!bldlevel.!version
+        if (G.!bldlevel.!description \= '') then
+            say 'Description:     'G.!bldlevel.!description
     end
 end
 else do
@@ -154,6 +169,7 @@ exit 0
  * .!datetime
  * .!buildmachine
  * .!asdid
+ * .!language
  * .!version
  * .!description
  *
@@ -227,6 +243,7 @@ GetBldLevel: procedure expose G.
         call value aStem'.!datetime', ''
         call value aStem'.!buildmachine', ''
         call value aStem'.!asdid', ''
+        call value aStem'.!language', ''
         call value aStem'.!version', ''
         call value aStem'.!description', ''
 
@@ -240,6 +257,7 @@ GetBldLevel: procedure expose G.
                 when key = 'Date/Time' then call value aStem'.!datetime', value
                 when key = 'Build Machine' then call value aStem'.!buildmachine', value
                 when key = 'ASD Feature ID' then call value aStem'.!asdid', value
+                when key = 'Language Code' then call value aStem'.!language', value
                 when key = 'File Version' then call value aStem'.!version', value
                 when key = 'Description' then call value aStem'.!description', value
                 otherwise nop
