@@ -2,9 +2,9 @@
  *
  * Generic script to set up a project environment
  *
- * Version 1.2 (2010-09-01)
+ * Version 1.3 (2011-07-24)
  *
- * Author: Dmitry A. Kuminov
+ * Author: Dmitriy Kuminov
  *
  * (Too Simple To Be Copyrighted)
  *
@@ -41,11 +41,24 @@
  *                      SE. The value of this variable is the SE version number
  *                      (e.g. "1.1").
  *
- *   SE_CMD_ARGS        Contains the full string of command line arguments
+ *   SE_CMD_ARGS        Contains the full list of command line arguments
  *                      (excluding the <envscript> specification descrbed above).
  *                      This variable may be modified by the environment script
  *                      and the modified value will be passed to the command
  *                      processor for execution.
+ *
+ *   SE_CMD_ROOT        Contains the full path to a directory containing the 
+ *                      found environment script. This variable may be used to 
+ *                      address files relative to the location of the script
+ *                      (e.g. other scripts lie the ones containing local
+ *                      setup). For simplicity, the value always ends with '\'.
+ *
+ *   SE_CMD_ENV         Contains the name of the found environment script.
+ *                      Together with %SE_CMD_ROOT%, comprises the full path
+ *                      to the script.
+ *
+ *   SE_CMD_CWD         Contains the full path to the directory SE was started  
+ *                      from.
  *
  * SE provides a built-in protection against nested invocations which means that
  * any given "env.cmd" residing in a particular directory is executed only once
@@ -62,6 +75,9 @@
  *
  *
  * HISTORY
+ *
+ * Version 1.3 (2011-07-24):
+ *   - Added SE_CMD_ROOT and SE_CMD_ENV environment variables.
  *
  * Version 1.2 (2010-09-01):
  *   - Fixed a bug with started .CMD scripts being not found in PATH which led
@@ -95,7 +111,8 @@ end
 if (translate(right(EnvCmd, 4)) \== '.CMD') then
     EnvCmd = EnvCmd'.cmd'
 
-dir = directory()
+startDir = directory()
+dir = startDir
 do while 1
     probe = dir'\'EnvCmd
     if (translate(probe) \== ScriptFile &,
@@ -104,10 +121,17 @@ do while 1
         if (value(probe_var,,'OS2ENVIRONMENT') == '') then do
             if (EnvArgs \== '') then probe = probe EnvArgs
             /*say 'Starting "'probe'"'*/
-            call value 'SE_CMD_RUNNING', '1.1', 'OS2ENVIRONMENT'
+            call value 'SE_CMD_RUNNING', '1.3', 'OS2ENVIRONMENT'
             call value 'SE_CMD_ARGS', aArgs, 'OS2ENVIRONMENT'
+            call value 'SE_CMD_ROOT',,
+                filespec('D', probe)||filespec('P', probe), 'OS2ENVIRONMENT'
+            call value 'SE_CMD_ENV', filespec('N', probe), 'OS2ENVIRONMENT'
+            call value 'SE_CMD_CWD', startDir, 'OS2ENVIRONMENT'
             'call' probe
             aArgs = value('SE_CMD_ARGS',, 'OS2ENVIRONMENT')
+            call value 'SE_CMD_CWD',, 'OS2ENVIRONMENT'
+            call value 'SE_CMD_ENV',, 'OS2ENVIRONMENT'
+            call value 'SE_CMD_ROOT',, 'OS2ENVIRONMENT'
             call value 'SE_CMD_ARGS',, 'OS2ENVIRONMENT'
             call value 'SE_CMD_RUNNING',, 'OS2ENVIRONMENT'
             if (rc \= 0) then do
