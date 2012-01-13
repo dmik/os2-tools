@@ -1,0 +1,9 @@
+This repository contains a collection of small utility programs
+for the OS/2 platform that are too simple to deserve a separate
+repository of their own.
+
+These utilities are written mostly in the REXX programming
+language.
+
+Please refer to individual files for more information about
+each tool.
