@@ -2,7 +2,7 @@
  *
  * Command output logger.
  *
- * Version 1.0 (2013-07-08)
+ * Version 1.1
  *
  * Author: Dmitriy Kuminov
  *
@@ -26,6 +26,9 @@
  *
  * HISTORY
  *
+ * Version 1.1 (2014-06-04):
+ *   - Always create log file in current directory.
+ *   - Log current date/time at start.
  * Version 1.0 (2013-07-08):
  *   - Initial release.
  */
@@ -66,10 +69,10 @@ end
 
 parse value date('S')||time('L') with ts':'ts1':'ts2'.'ts3
 ts = ts||ts1||ts2||strip(ts3,'T','0')
-log_file = prg'-'ts'.log'
+log_file = filespec('N',prg)'-'ts'.log'
 
 call SysFileDelete log_file
-call lineout log_file, '['aArgs']'
+call lineout log_file, '['date('N')' 'time('N')', 'aArgs']'
 call lineout log_file, ''
 call lineout log_file
 
