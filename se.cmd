@@ -76,6 +76,9 @@
  *
  * HISTORY
  *
+ * Version 1.4 (2014-09-25):
+ *   - Strip whitespace around arguments.
+ *
  * Version 1.3 (2011-07-24):
  *   - Added SE_CMD_ROOT and SE_CMD_ENV environment variables.
  *
@@ -122,7 +125,7 @@ do while 1
             if (EnvArgs \== '') then probe = probe EnvArgs
             /*say 'Starting "'probe'"'*/
             call value 'SE_CMD_RUNNING', '1.3', 'OS2ENVIRONMENT'
-            call value 'SE_CMD_ARGS', aArgs, 'OS2ENVIRONMENT'
+            call value 'SE_CMD_ARGS', strip(aArgs), 'OS2ENVIRONMENT'
             call value 'SE_CMD_ROOT',,
                 filespec('D', probe)||filespec('P', probe), 'OS2ENVIRONMENT'
             call value 'SE_CMD_ENV', filespec('N', probe), 'OS2ENVIRONMENT'
