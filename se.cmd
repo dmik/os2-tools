@@ -2,7 +2,7 @@
  *
  * Generic script to set up a project environment
  *
- * Version 1.3 (2011-07-24)
+ * Version 1.5 (2015-11-21)
  *
  * Author: Dmitriy Kuminov
  *
@@ -47,8 +47,8 @@
  *                      and the modified value will be passed to the command
  *                      processor for execution.
  *
- *   SE_CMD_ROOT        Contains the full path to a directory containing the 
- *                      found environment script. This variable may be used to 
+ *   SE_CMD_ROOT        Contains the full path to a directory containing the
+ *                      found environment script. This variable may be used to
  *                      address files relative to the location of the script
  *                      (e.g. other scripts lie the ones containing local
  *                      setup). For simplicity, the value always ends with '\'.
@@ -57,8 +57,11 @@
  *                      Together with %SE_CMD_ROOT%, comprises the full path
  *                      to the script.
  *
- *   SE_CMD_CWD         Contains the full path to the directory SE was started  
+ *   SE_CMD_CWD         Contains the full path to the directory SE was started
  *                      from.
+ *
+ *   SE_CMD_RWD         Contains the relative path to the directory SE was started
+ *                      from (relative to %SE_CMD_ROOT%).
  *
  * SE provides a built-in protection against nested invocations which means that
  * any given "env.cmd" residing in a particular directory is executed only once
@@ -75,6 +78,9 @@
  *
  *
  * HISTORY
+ *
+ * Version 1.5 (2015-11-21):
+ *   - Add SE_CMD_RWD environment variable.
  *
  * Version 1.4 (2014-09-25):
  *   - Strip whitespace around arguments.
@@ -124,14 +130,16 @@ do while 1
         if (value(probe_var,,'OS2ENVIRONMENT') == '') then do
             if (EnvArgs \== '') then probe = probe EnvArgs
             /*say 'Starting "'probe'"'*/
+			root = filespec('D', probe)||filespec('P', probe)
             call value 'SE_CMD_RUNNING', '1.3', 'OS2ENVIRONMENT'
             call value 'SE_CMD_ARGS', strip(aArgs), 'OS2ENVIRONMENT'
-            call value 'SE_CMD_ROOT',,
-                filespec('D', probe)||filespec('P', probe), 'OS2ENVIRONMENT'
+            call value 'SE_CMD_ROOT', root, 'OS2ENVIRONMENT'
             call value 'SE_CMD_ENV', filespec('N', probe), 'OS2ENVIRONMENT'
             call value 'SE_CMD_CWD', startDir, 'OS2ENVIRONMENT'
+            call value 'SE_CMD_RWD', substr(startDir, length(root) + 1), 'OS2ENVIRONMENT'
             'call' probe
             aArgs = value('SE_CMD_ARGS',, 'OS2ENVIRONMENT')
+            call value 'SE_CMD_RWD',, 'OS2ENVIRONMENT'
             call value 'SE_CMD_CWD',, 'OS2ENVIRONMENT'
             call value 'SE_CMD_ENV',, 'OS2ENVIRONMENT'
             call value 'SE_CMD_ROOT',, 'OS2ENVIRONMENT'
