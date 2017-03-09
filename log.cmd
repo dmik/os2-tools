@@ -2,7 +2,7 @@
  *
  * Command output logger.
  *
- * Version 1.1
+ * Version 1.2
  *
  * Author: Dmitriy Kuminov
  *
@@ -26,6 +26,8 @@
  *
  * HISTORY
  *
+ * Version 1.2 (2017-03-09):
+ *   - Log elapsed seconds and exit code at termination.
  * Version 1.1 (2014-06-04):
  *   - Always create log file in current directory.
  *   - Log current date/time at start.
@@ -76,6 +78,8 @@ call lineout log_file, '['date('N')' 'time('N')', 'aArgs']'
 call lineout log_file, ''
 call lineout log_file
 
+call time 'R'
+
 tail = '2>&1 | tee -a 'log_file
 
 if (isCmd) then 'call' aArgs tail
@@ -83,9 +87,14 @@ else aArgs tail
 if (rc == 1041) then do
     /* Piping the command in REXX swallows its STDOUT if the command is
      * not found or invalid leaving the user w/o any feedback. Fix it. */
-    say 'SYS1041: The name 'prg' is not recognized as an'
-    say 'internal or external command, operable program or batch file.'
-    exit 1041
+    msg = 'SYS1041: The name 'prg' is not recognized as an'||'0D0A'x||,
+          'internal or external command, operable program or batch file.'
+    say msg
+    call lineout log_file, msg
 end
 
-exit
+elapsed = strip(time('E'), 'T', '0')
+call lineout log_file, ''
+call lineout log_file, '['date('N')' 'time('N')', exit code 'rc', took 'elapsed' s]'
+
+exit rc
